@@ -15,7 +15,7 @@ class ConnectionInfoPannel extends StatefulWidget {
 class ConnectionInfoPannelState extends State<ConnectionInfoPannel> {
   final _formKey = GlobalKey<FormState>();
   final nameController = TextEditingController();
-  final serverAddressController = TextEditingController();
+  final hostController = TextEditingController();
   final serverPortController = TextEditingController();
 
   final userNameController = TextEditingController();
@@ -40,7 +40,7 @@ class ConnectionInfoPannelState extends State<ConnectionInfoPannel> {
             border: UnderlineInputBorder(),
             labelText: "服务地址",
           ),
-          controller: serverAddressController),
+          controller: hostController),
           TextFormField(
               decoration: const InputDecoration(
                 border: UnderlineInputBorder(),
