@@ -7,7 +7,7 @@ class HomeGui extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      children: const [MenuBarGui()]
+      children: const [MenuBarGui(),]
     );
   }
 }

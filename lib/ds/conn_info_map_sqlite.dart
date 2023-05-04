@@ -2,9 +2,9 @@ import 'sqlite_op.dart';
 import 'redis_connection_info.dart';
 
 class ConnInfoMapSqlite {
-  var database = SqliteOp(databseName: 'redis').openSqliteDatabase();
+  var database = SqliteOp(databseName: 'redis.db').openSqliteDatabase();
   ConnInfoMapSqlite() {
-    checkOrCreateTable();
+    //checkOrCreateTable();
   }
 
   void checkOrCreateTable() async {
