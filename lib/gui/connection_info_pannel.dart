@@ -79,12 +79,14 @@ class ConnectionInfoPannelState extends State<ConnectionInfoPannel> {
           controller: passwordController,
           obscureText: true,
         ),
-        ElevatedButton(
+        Container(margin: const EdgeInsets.only(top: 20),child:ElevatedButton(
             onPressed: () {
               save();
               Navigator.pop(context);
             },
-            child: const Text("保存"))
+            child: const Text("保存")),
+            )
+        
       ]),
     );
   }
