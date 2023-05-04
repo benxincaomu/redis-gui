@@ -32,6 +32,7 @@ class ConnectionInfoPannelState extends State<ConnectionInfoPannel> {
 
   @override
   Widget build(BuildContext context) {
+    const fontStyle = TextStyle(fontSize: 24);
     return Form(
       key: _formKey,
       autovalidateMode: AutovalidateMode.always,
@@ -40,20 +41,27 @@ class ConnectionInfoPannelState extends State<ConnectionInfoPannel> {
           decoration: const InputDecoration(
             border: UnderlineInputBorder(),
             labelText: "名称",
+            labelStyle: fontStyle,
+
           ),
+          style: fontStyle,
           controller: nameController,
         ),
         TextFormField(
             decoration: const InputDecoration(
               border: UnderlineInputBorder(),
               labelText: "服务地址",
+              labelStyle: fontStyle
             ),
+            style: fontStyle,
             controller: hostController),
         TextFormField(
             decoration: const InputDecoration(
               border: UnderlineInputBorder(),
               labelText: "端口",
+              labelStyle: fontStyle
             ),
+            style: fontStyle,
             controller: portController,
             keyboardType: TextInputType.number,
             validator: (value) {
@@ -68,14 +76,18 @@ class ConnectionInfoPannelState extends State<ConnectionInfoPannel> {
           decoration: const InputDecoration(
             border: UnderlineInputBorder(),
             labelText: "用户名",
+            labelStyle: fontStyle
           ),
+          style: fontStyle,
           controller: userNameController,
         ),
         TextFormField(
           decoration: const InputDecoration(
             border: UnderlineInputBorder(),
             labelText: "密码",
+            labelStyle: fontStyle
           ),
+          style: fontStyle,
           controller: passwordController,
           obscureText: true,
         ),
