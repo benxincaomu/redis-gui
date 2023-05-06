@@ -1,4 +1,6 @@
 import "package:flutter/material.dart";
+import 'package:provider/provider.dart';
+import 'package:redis_gui_manager/gui/server_list_panel.dart';
 import '../ds/redis_connection_info.dart';
 import '../ds/conn_info_map_sqlite.dart';
 
@@ -111,7 +113,9 @@ class ConnectionInfoPannelState extends State<ConnectionInfoPannel> {
           port: int.parse(portController.text),
           userName: userNameController.text,
           password: passwordController.text);
-      return connInfoMap.insertOne(conn);
+      Future<int> res = connInfoMap.insertOne(conn);
+      Provider.of<ServerListModel>(context,listen: false).refresh();
+      return res;
     } else {}
     return Future.value(0);
   }

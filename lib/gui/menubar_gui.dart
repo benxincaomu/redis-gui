@@ -27,16 +27,17 @@ class MenuBarGui extends StatelessWidget {
                                 height: 500,
                                 child: connectionInfoPannel,
                               ),
-                              
                             ));
                   }),
               MenuItemButton(
                   child: const MenuAcceleratorLabel("退出"), onPressed: () {})
             ], child: const MenuAcceleratorLabel("文件")),
-            SubmenuButton(menuChildren: <Widget>[
-              MenuItemButton(
-                  child: const MenuAcceleratorLabel("快速连接"), onPressed: () {})
-            ], child: const MenuAcceleratorLabel("连接"))
+            const SubmenuButton(menuChildren: <Widget>[
+              SubmenuButton(
+                  menuChildren: [],
+                  child: MenuAcceleratorLabel("快速连接"),
+                  ),
+            ], child: MenuAcceleratorLabel("连接"))
           ],
         ))
       ],

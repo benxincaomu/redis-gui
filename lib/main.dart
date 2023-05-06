@@ -1,9 +1,16 @@
-
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:redis_gui_manager/gui/server_list_panel.dart';
 import 'gui/home_gui.dart';
 
 void main() {
-  runApp(const MainApp());
+    var serverListModel = ServerListModel();
+    serverListModel.refresh();
+  runApp(
+    MultiProvider(providers: [
+      ChangeNotifierProvider(create: (context) => serverListModel,)
+    ], child: const MainApp())
+  );
 }
 
 class MainApp extends StatelessWidget {
@@ -11,8 +18,6 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: Scaffold(body: HomeGui())
-    );
+    return const MaterialApp(home: Scaffold(body: HomeGui()));
   }
 }

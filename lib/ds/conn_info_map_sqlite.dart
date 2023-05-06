@@ -2,30 +2,8 @@ import 'sqlite_op.dart';
 import 'redis_connection_info.dart';
 
 class ConnInfoMapSqlite {
-  var database = SqliteOp(databseName: 'redis.db').openSqliteDatabase();
-  ConnInfoMapSqlite() {
-    //checkOrCreateTable();
-  }
+  var database = SqliteOp().openSqliteDatabase();
 
-  void checkOrCreateTable() async {
-    var db = await database;
-    var result = db.rawQuery(
-        "SELECT count(*) FROM sqlite_master WHERE type=\"table\" AND name = \"conn_info\"");
-    result.then((value) {
-      if (value.isEmpty) {
-        db.execute('''
-      CREATE TABLE IF NOT EXISTS conn_info(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT,
-        host TEXT,
-        port INTEGER,
-        username TEXT,
-        password TEXT
-      )
-    ''');
-      }
-    });
-  }
 
   /// 插入一条连接信息
   Future<int> insertOne(RedisConnectionInfo connInfo) async {
@@ -40,7 +18,7 @@ class ConnInfoMapSqlite {
     return db.delete('conn_info', where: 'id = ?', whereArgs: [id]);
   }
 
-  /// 修改一条连接信息 
+  /// 修改一条连接信息
   /// connInfo: 连接信息
   Future<int> updateOne(RedisConnectionInfo connInfo) async {
     var db = await database;
@@ -51,23 +29,20 @@ class ConnInfoMapSqlite {
   /// 查询所有的连接信息
   Future<List<RedisConnectionInfo>> queryAllConnection() async {
     var db = await database;
-    Future<List<Map<String,dynamic>>> res = db.rawQuery('conn_info');
+    List<Map<String, dynamic>> res =
+        await db.rawQuery('select * from conn_info');
     List<RedisConnectionInfo> connInfos = [];
-    res.then((value) {
-      if(value.isNotEmpty) {
-        for (var element in value) {
-          connInfos.add(RedisConnectionInfo(
-            id: element['id'] ,
+    if (res.isNotEmpty) {
+      for (var element in res) {
+        connInfos.add(RedisConnectionInfo(
+            id: element['id'],
             name: element['name'],
             host: element['host'],
             port: element['port'],
             userName: element['username'],
-            password: element['password']
-          ));
-        }
+            password: element['password']));
       }
-
-    });
+    }
     return connInfos;
   }
 }
