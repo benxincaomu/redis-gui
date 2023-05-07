@@ -1,6 +1,7 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../ds/redis_connection_info.dart';
 
 class RedisOpsGui extends StatefulWidget {
   const RedisOpsGui({super.key});
@@ -12,47 +13,102 @@ class RedisOpsGui extends StatefulWidget {
 }
 
 class RedisOpsState extends State with TickerProviderStateMixin {
-  late TabController _tabController;
-
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 0, vsync: this);
   }
 
   @override
   Widget build(BuildContext context) {
-    stdout.writeln("${MediaQuery.of(context).size}");
     var size = MediaQuery.of(context).size;
-    return SizedBox(
-        width: size.width,
-        height: size.height - 50,
-        child: Scaffold(
-          appBar: TabBar(
-              controller: _tabController,
-              labelColor: Colors.blue,
-              tabs: const [
-                Tab(
-                  text: "local",
+    return Consumer<RedisSessionModel>(builder: (context, sessions, child) {
+      var tabController =
+          TabController(length: sessions.sessions.length + 1, vsync: this);
+      List<Tab> tabs = [
+        const Tab(
+          text: "帮助",
+        ),
+      ];
+      List<Widget> views = [
+        Center(
+          child: Column(children: const [
+            Text(
+              "本页对使用方式进行一些简单说明,",
+            ),
+            Text(
+              "除帮助页之外，其他标签页可以通过双击标签来进行关闭",
+            ),
+            Text(
+              "目前只能从快速连接来开始对redis服务进行连接",
+            ),
+          ]),
+        )
+      ];
+      for (var connInfo in sessions.sessions) {
+        tabs.add(Tab(
+            child: GestureDetector(
+          child: Text(connInfo.name),
+          onDoubleTap: () {
+            showDialog(
+                context: context,
+                builder: (context) {
+                  return AlertDialog(
+                      title: const Text("确认关闭标签页吗?"),
+                      content: const Text("双击标签页可以关闭标签页"),
+                      actions: [
+                        TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                            child: const Text("取消")),
+                        TextButton(
+                            onPressed: () {
+                              Provider.of<RedisSessionModel>(context,
+                                      listen: false)
+                                  .remove(connInfo.id!);
 
-                  //icon: Icon(Icons.local_fire_department),
-                ),
-                Tab(
-                  text: "local2",
-                  //icon: Icon(Icons.local_fire_department),
-                )
-              ]),
-          body: TabBarView(
-            controller: _tabController,
-            children: const <Widget>[
-              Center(
-                child: Text("It's cloudy here"),
-              ),
-              Center(
-                child: Text("It's rainy here"),
-              ),
-            ],
-          ),
-        ));
+                              Navigator.of(context).pop();
+                            },
+                            child: const Text("确认"))
+                      ]);
+                });
+          },
+        )));
+        views.add(const Center(child: Text("连接中...")));
+      }
+      return SizedBox(
+          width: size.width,
+          height: size.height - 50,
+          child: Scaffold(
+            appBar: TabBar(
+                controller: tabController, labelColor: Colors.blue, tabs: tabs),
+            body: TabBarView(
+              controller: tabController,
+              children: views,
+            ),
+          ));
+    });
+  }
+}
+
+/// 触发标签页增加或者删除
+class RedisSessionModel extends ChangeNotifier {
+  List<RedisConnectionInfo> sessions = [];
+
+  void add(RedisConnectionInfo session) {
+    sessions.add(session);
+    notifyListeners();
+  }
+
+  void remove(int id) {
+    int idx = 0;
+    for (var session in sessions) {
+      if (session.id == id) {
+        break;
+      }
+      idx++;
+    }
+    sessions.removeAt(idx);
+    notifyListeners();
   }
 }

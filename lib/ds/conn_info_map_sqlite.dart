@@ -11,6 +11,24 @@ class ConnInfoMapSqlite {
     return db.insert('conn_info', connInfo.toMap());
   }
 
+  Future<RedisConnectionInfo> selectLastOne() async {
+    var db = await database;
+    List<Map<String, dynamic>> res =
+        await db.rawQuery('select * from conn_info order by id desc limit 1');
+    if (res.isNotEmpty) {
+      return RedisConnectionInfo(
+          id: res[0]['id'],
+          name: res[0]['name'],
+          host: res[0]['host'],
+          port: res[0]['port'],
+          userName: res[0]['username'],
+          password: res[0]['password']);
+    }else{
+      // ignore: null_argument_to_non_null_type
+      return Future.value();
+    }
+  }
+
   /// 删除一条连接信息
   /// id: 连接信息的id
   Future<int> deleteOne(int id) async {
@@ -45,4 +63,5 @@ class ConnInfoMapSqlite {
     }
     return connInfos;
   }
+
 }

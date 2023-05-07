@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:redis_gui_manager/gui/redis_ops_gui.dart';
-import 'package:redis_gui_manager/gui/server_list_panel.dart';
 import 'menubar_gui.dart';
 
 class HomeGui extends StatelessWidget {
@@ -11,7 +10,7 @@ class HomeGui extends StatelessWidget {
     return Column(children: [
       const MenuBarGui(),
       Row(
-        children: const <Widget>[/* ServerListPanel(), */ RedisOpsGui()],
+        children: const <Widget>[ RedisOpsGui()],
       )
     ]);
   }
