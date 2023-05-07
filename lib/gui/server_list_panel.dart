@@ -15,19 +15,25 @@ class ServerListPanel extends StatefulWidget {
 class ServerListState extends State {
   @override
   Widget build(BuildContext context) {
-    /* return Row(
-      children: const <Widget>[
-        Text("redis服务列表"),
-      ],
-    ); */
-    return Consumer<ServerListModel>(builder: (context, serverListModel, child) {
-      List<Container> list = [];
+    return Consumer<ServerListModel>(
+        builder: (context, serverListModel, child) {
+      List<GestureDetector> list = [];
       for (var element in serverListModel.conns) {
-       list.add(Container(
+        list.add(GestureDetector(
+          onTap: () {
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: Text(
+                "${element.host}:${element.port}",
+              ),
+            //   width: 300,
+            ));
+          },
           child: Text(element.name),
-       )) ;
+        ));
       }
-      return Row(children: list,);
+      return Column(
+        children: list,
+      );
     });
   }
 }
@@ -35,7 +41,7 @@ class ServerListState extends State {
 class ServerListModel extends ChangeNotifier {
   List<RedisConnectionInfo> conns = [];
 
-  void refresh() async{
+  void refresh() async {
     conns.clear();
     var database = SqliteOp().openSqliteDatabase();
     var db = await database;
