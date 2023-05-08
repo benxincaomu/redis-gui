@@ -7,23 +7,19 @@ import '../ds/conn_info_map_sqlite.dart';
 
 class ConnectionInfoPannel extends StatefulWidget {
   //final state = ConnectionInfoPannelState();
-  const ConnectionInfoPannel({super.key});
-
-  void save() {
-    //state.save();
-  }
-
-  void cancel() {}
+  final RedisConnectionInfo? connInfo;
+  const ConnectionInfoPannel({super.key, this.connInfo});
 
   @override
   State<StatefulWidget> createState() {
     // ignore: no_logic_in_create_state
-    return ConnectionInfoPannelState();
+    return ConnectionInfoPannelState(connInfo: connInfo);
   }
 }
 
 class ConnectionInfoPannelState extends State<ConnectionInfoPannel> {
   final _formKey = GlobalKey<FormState>();
+  late RedisConnectionInfo? connInfo;
   final nameController = TextEditingController(text: "localhost");
   final hostController = TextEditingController(text: "127.0.0.1");
   final portController = TextEditingController(text: "6379");
@@ -32,7 +28,15 @@ class ConnectionInfoPannelState extends State<ConnectionInfoPannel> {
 
   final passwordController = TextEditingController();
   final connInfoMap = ConnInfoMapSqlite();
-
+  ConnectionInfoPannelState({this.connInfo}) {
+    if (connInfo != null) {
+      nameController.text = connInfo!.name;
+      hostController.text = connInfo!.host;
+      portController.text = connInfo!.port.toString();
+      userNameController.text = connInfo!.userName ?? "";
+      passwordController.text = connInfo!.password ?? "";
+    }
+  }
   @override
   Widget build(BuildContext context) {
     const fontStyle = TextStyle(fontSize: 24);
@@ -105,16 +109,27 @@ class ConnectionInfoPannelState extends State<ConnectionInfoPannel> {
   Future<int> save() {
     if (_formKey.currentState!.validate()) {
       var conn = RedisConnectionInfo(
+          id: connInfo?.id,
           name: nameController.text,
           host: hostController.text,
           port: int.parse(portController.text),
           userName: userNameController.text,
           password: passwordController.text);
-      Future<int> res = connInfoMap.insertOne(conn);
-      Provider.of<ServerListModel>(context, listen: false).refresh();
-      var lastOne = connInfoMap.selectLastOne();
-      lastOne.then((value) =>
-          Provider.of<RedisSessionModel>(context, listen: false).add(value));
+      Future<int> res;
+      if (connInfo == null) {
+        res = connInfoMap.insertOne(conn);
+        Provider.of<ServerListModel>(context, listen: false).refresh();
+        var lastOne = connInfoMap.selectLastOne();
+        // 直接打开连接操作标签页
+        lastOne.then((value) =>
+            Provider.of<RedisSessionModel>(context, listen: false)
+                .addOrReplace(value));
+      } else {
+        res = connInfoMap.updateOne(conn);
+        Provider.of<ServerListModel>(context, listen: false).refresh();
+            Provider.of<RedisSessionModel>(context, listen: false)
+                .addOrReplace(conn);
+      }
 
       return res;
     } else {}
