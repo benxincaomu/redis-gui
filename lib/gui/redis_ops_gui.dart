@@ -37,14 +37,12 @@ class RedisOpsState extends State with TickerProviderStateMixin {
               textAlign: TextAlign.left,
             ),
             Text(
-              "除帮助页之外，其他标签页可以通过双击标签来进行关闭",,
+              "除帮助页之外，其他标签页可以通过双击标签来进行关闭",
               textAlign: TextAlign.left,
-
             ),
             Text(
               "目前只能从快速连接来开始对redis服务进行连接",
               textAlign: TextAlign.left,
-
             ),
           ]),
         )
