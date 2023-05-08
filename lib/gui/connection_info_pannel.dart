@@ -1,7 +1,7 @@
 import "package:flutter/material.dart";
 import 'package:provider/provider.dart';
 import 'package:redis_gui_manager/gui/redis_ops_gui.dart';
-import 'package:redis_gui_manager/gui/server_list_panel.dart';
+import 'package:redis_gui_manager/gui/server_list_model.dart';
 import '../ds/redis_connection_info.dart';
 import '../ds/conn_info_map_sqlite.dart';
 

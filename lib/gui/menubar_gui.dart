@@ -3,7 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:redis_gui_manager/ds/conn_info_map_sqlite.dart';
 import 'package:redis_gui_manager/gui/redis_ops_gui.dart';
 import "connection_info_pannel.dart";
-import 'server_list_panel.dart';
+import 'server_list_model.dart';
+
 
 class MenuBarGui extends StatelessWidget {
   const MenuBarGui({super.key});

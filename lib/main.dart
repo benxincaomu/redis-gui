@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:redis_gui_manager/gui/server_list_panel.dart';
+import 'package:redis_gui_manager/gui/server_list_model.dart';
 import 'gui/home_gui.dart';
 import 'gui/redis_ops_gui.dart';
 
