@@ -1,5 +1,4 @@
 import 'package:path/path.dart';
-import "package:flutter/widgets.dart";
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 class SqliteOp {
@@ -7,8 +6,9 @@ class SqliteOp {
   Future<Database> openSqliteDatabase() async {
     sqfliteFfiInit();
 
-    var databaseFactory = databaseFactoryFfi;
-    final database = databaseFactory.openDatabase(inMemoryDatabasePath,
+    databaseFactory = databaseFactoryFfi;
+    
+    final database = databaseFactory.openDatabase(join(await getDatabasesPath(), "redis.db"),
         options: OpenDatabaseOptions(
           version: 1,
           onCreate: (db, version) {

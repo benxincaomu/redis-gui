@@ -98,8 +98,19 @@ class RedisOpsState extends State with TickerProviderStateMixin {
 class RedisSessionModel extends ChangeNotifier {
   List<RedisConnectionInfo> sessions = [];
 
-  void add(RedisConnectionInfo session) {
-    sessions.add(session);
+  void addOrReplace(RedisConnectionInfo session) {
+    int i = -1;
+    for (var s in sessions) {
+      i++;
+      if (s.id == session.id) {
+        break;
+      }
+    }
+    if (i < 0) {
+      sessions.add(session);
+    } else {
+      sessions.replaceRange(i, i + 1, [session]);
+    }
     notifyListeners();
   }
 
