@@ -10,43 +10,47 @@ class RedisDatasource {
   int port;
   String? username;
   String? password;
-  Queue<RedisConnection> conns = DoubleLinkedQueue<RedisConnection>();
+  Queue<Future<Command>> commands = DoubleLinkedQueue<Future<Command>>();
 
   RedisDatasource(this.initConns, this.maxConns, this.host, this.port,
       this.username, this.password) {
-    conns = DoubleLinkedQueue();
     for (int i = 0; i < initConns && i < maxConns; i++) {
-      var conn = _initConnection();
-      conns.addLast(conn);
+      commands.add(_initConnection());
     }
-    currConns = conns.length;
+    currConns = commands.length;
   }
-  RedisConnection _initConnection() {
+  Future<Command> _initConnection() {
     var conn = RedisConnection();
-    if (username == null || password == null) {
-      conn.connect(host, port);
+    if (username == null ||
+        username!.isEmpty ||
+        password == null ||
+        password!.isEmpty) {
+      var cn = conn.connect(host, port);
+      commands.add(cn);
+      return cn;
     } else {
-      conn.connectSecure(host, port).then((Command command) {
+      var cn = conn.connectSecure(host, port);
+      cn.then((Command command) {
         command.send_object(["AUTH", username, password]);
       });
+      commands.add(cn);
+      return cn;
     }
-    return conn;
   }
 
-  RedisConnection getConnection() {
-    if (conns.isEmpty) {
-      if (currConns < maxConns) {
-        var conn = _initConnection();
-        conns.addLast(conn);
-        currConns++;
-      } else {
-        throw Exception("No more connections available");
-      }
-    }
-    return conns.removeFirst();
+  void releaseConnection(Future<Command> command) {
+    commands.add(command);
   }
 
-  void releaseConnection(RedisConnection conn) {
-    conns.addLast(conn);
+  Future<Command> getCommand() {
+    if (commands.isNotEmpty) {
+      return commands.removeFirst();
+    } else if (currConns < maxConns) {
+      var conn = _initConnection();
+      currConns++;
+      return conn;
+    } else {
+      throw Exception("No more connections available");
+    }
   }
 }

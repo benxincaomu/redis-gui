@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:redis/redis.dart' as redis;
+import 'package:redis_gui_manager/ds/redis_datasource.dart';
 
 import '../ds/redis_connection_info.dart';
 
@@ -77,7 +79,7 @@ class RedisOpsState extends State with TickerProviderStateMixin {
                 });
           },
         )));
-        views.add(const Center(child: Text("连接中...")));
+        views.add(RedisOpsBodyPanel(connInfo: connInfo));
       }
       return SizedBox(
           width: size.width,
@@ -89,6 +91,71 @@ class RedisOpsState extends State with TickerProviderStateMixin {
               controller: tabController,
               children: views,
             ),
+          ));
+    });
+  }
+}
+
+class RedisOpsBodyPanel extends StatefulWidget {
+  RedisConnectionInfo connInfo;
+  late RedisDatasource redisDatasource;
+  RedisOpsBodyPanel({required this.connInfo}) {
+    redisDatasource = RedisDatasource(1, 3, connInfo.host, connInfo.port,
+        connInfo.userName, connInfo.password);
+  }
+
+  @override
+  State<RedisOpsBodyPanel> createState() {
+    return RedisOpsBodyState();
+  }
+}
+
+class RedisOpsBodyState extends State<RedisOpsBodyPanel> {
+  late RedisDatasource redisDatasource = widget.redisDatasource;
+  List<Widget> dbs = [];
+  int i = 0;
+  @override
+  @mustCallSuper
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(builder: (context, constraints) {
+      var cmd = redisDatasource.getCommand();
+      if (dbs.isEmpty) {
+        cmd.then((redis.Command command) {
+          command.send_object(["config", "get", "databases"]).then((value) {
+            if (value is List) {
+              setState(() {
+                for (int i = 0; i < int.parse(value[1]); i++) {
+                  dbs.add(TextButton(
+                      onPressed: () {
+                      },
+                      child: Text("db$i")));
+                }
+              });
+            }
+          });
+        }).whenComplete(() {
+          redisDatasource.releaseConnection(cmd);
+        });
+      }
+      return SizedBox(
+          width: constraints.maxWidth,
+          height: constraints.maxHeight,
+          child: Row(
+            children: [
+              Column(
+                children: <Widget>[
+                  Text("${widget.connInfo.name}:${widget.connInfo.port}"),
+                  Column(
+                    children: dbs,
+                  )
+                ],
+              )
+            ],
           ));
     });
   }
