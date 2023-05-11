@@ -1,10 +1,16 @@
+import 'dart:ffi';
+import 'dart:io';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:path/path.dart';
 import 'package:provider/provider.dart';
 import 'package:redis_gui_manager/gui/server_list_model.dart';
 import 'gui/home_gui.dart';
 import 'gui/redis_ops_gui.dart';
 
 void main() {
+  _loadLibrary();
   var serverListModel = ServerListModel();
   serverListModel.refresh();
   runApp(MultiProvider(providers: [
@@ -13,6 +19,15 @@ void main() {
     ),
     ChangeNotifierProvider(create: (context) => RedisSessionModel())
   ], child: const MainApp()));
+}
+
+DynamicLibrary? _loadLibrary() {
+  if (Platform.isWindows && kReleaseMode) {
+    final scriptDir = File(Platform.script.toFilePath()).parent;
+    final libraryNextToScript = File(join(scriptDir.path, 'sqlite3.dll'));
+    return DynamicLibrary.open(libraryNextToScript.path);
+  }
+  return null;
 }
 
 class MainApp extends StatelessWidget {
