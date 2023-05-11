@@ -97,9 +97,9 @@ class RedisOpsState extends State with TickerProviderStateMixin {
 }
 
 class RedisOpsBodyPanel extends StatefulWidget {
-  RedisConnectionInfo connInfo;
+  final RedisConnectionInfo connInfo;
   late RedisDatasource redisDatasource;
-  RedisOpsBodyPanel({required this.connInfo}) {
+  RedisOpsBodyPanel({super.key, required this.connInfo}) {
     redisDatasource = RedisDatasource(1, 3, connInfo.host, connInfo.port,
         connInfo.userName, connInfo.password);
   }
@@ -130,10 +130,7 @@ class RedisOpsBodyState extends State<RedisOpsBodyPanel> {
             if (value is List) {
               setState(() {
                 for (int i = 0; i < int.parse(value[1]); i++) {
-                  dbs.add(TextButton(
-                      onPressed: () {
-                      },
-                      child: Text("db$i")));
+                  dbs.add(TextButton(onPressed: () {}, child: Text("db$i")));
                 }
               });
             }
@@ -142,21 +139,65 @@ class RedisOpsBodyState extends State<RedisOpsBodyPanel> {
           redisDatasource.releaseConnection(cmd);
         });
       }
+      var redisCommandController = TextEditingController();;
       return SizedBox(
-          width: constraints.maxWidth,
-          height: constraints.maxHeight,
-          child: Row(
-            children: [
-              Column(
-                children: <Widget>[
-                  Text("${widget.connInfo.name}:${widget.connInfo.port}"),
-                  Column(
-                    children: dbs,
-                  )
-                ],
-              )
-            ],
-          ));
+        width: constraints.maxWidth,
+        height: constraints.maxHeight,
+        child: Row(
+          children: [
+            Column(
+              children: <Widget>[
+                Text("${widget.connInfo.name}:${widget.connInfo.port}"),
+                Column(
+                  children: dbs,
+                )
+              ],
+            ),
+            SizedBox(
+                width: MediaQuery.of(context).size.width - 200,
+                child: Column(
+                  children: [
+                    SizedBox(
+                      height: MediaQuery.of(context).size.height - 175,
+                      child: const Text("Console output"),
+                    ),
+                    TextFormField(
+                      decoration: const InputDecoration(
+                        border: UnderlineInputBorder(),
+                        hintText: "redis command",
+                      ),
+                      controller: redisCommandController,
+                      onEditingComplete: () {
+                        var cmd = redisDatasource.getCommand();
+                        cmd.then((value) {
+                          var str = redisCommandController.text;
+                          if(str.isEmpty||str.trim().isEmpty){
+                            return;
+                          }
+                          List<String> sep = redisCommandController.text.split(" ");
+                          
+                          List<String> cmds = [];
+                          for (var s in sep) {
+                            if (s.isNotEmpty) {
+                              cmds.add(s);
+                            }
+                          }
+
+                          value.send_object(cmds).then((value) {
+                            print("response:$value");
+                          });
+                        }).whenComplete(() {
+                          redisDatasource.releaseConnection(cmd);
+                        });
+                      },
+                      
+                    ),
+                    const Text("server state")
+                  ],
+                ))
+          ],
+        ),
+      );
     });
   }
 }
