@@ -112,6 +112,7 @@ class RedisOpsBodyPanel extends StatefulWidget {
 
 class RedisOpsBodyState extends State<RedisOpsBodyPanel> {
   late RedisDatasource redisDatasource = widget.redisDatasource;
+  List<String> consoleOuts = [];
   List<Widget> dbs = [];
   int i = 0;
   @override
@@ -139,7 +140,11 @@ class RedisOpsBodyState extends State<RedisOpsBodyPanel> {
           redisDatasource.releaseConnection(cmd);
         });
       }
-      var redisCommandController = TextEditingController();;
+      var redisCommandController = TextEditingController();
+      List<Widget> consoleOutLines = [];
+      for (var value in consoleOuts) {
+        consoleOutLines.add(SelectableText(value));
+      }
       return SizedBox(
         width: constraints.maxWidth,
         height: constraints.maxHeight,
@@ -159,7 +164,9 @@ class RedisOpsBodyState extends State<RedisOpsBodyPanel> {
                   children: [
                     SizedBox(
                       height: MediaQuery.of(context).size.height - 175,
-                      child: const Text("Console output"),
+                      child: Column(
+                        children: consoleOutLines,
+                      ),
                     ),
                     TextFormField(
                       decoration: const InputDecoration(
@@ -171,11 +178,13 @@ class RedisOpsBodyState extends State<RedisOpsBodyPanel> {
                         var cmd = redisDatasource.getCommand();
                         cmd.then((value) {
                           var str = redisCommandController.text;
-                          if(str.isEmpty||str.trim().isEmpty){
+                          if (str.isEmpty || str.trim().isEmpty) {
                             return;
                           }
-                          List<String> sep = redisCommandController.text.split(" ");
-                          
+                          consoleOuts.add(">$str");
+                          List<String> sep =
+                              redisCommandController.text.split(" ");
+
                           List<String> cmds = [];
                           for (var s in sep) {
                             if (s.isNotEmpty) {
@@ -184,13 +193,22 @@ class RedisOpsBodyState extends State<RedisOpsBodyPanel> {
                           }
 
                           value.send_object(cmds).then((value) {
-                            print("response:$value");
+                            setState(() {
+                              if (value is String) {
+                                consoleOuts.add(value);
+                              } else if (value is List) {
+                                //consoleOuts.addAll(value as Iterable<String>);
+                                for(var str in value){
+                                  consoleOuts.add(str);
+                                }
+                              }
+                              //print("response:$value");
+                            });
                           });
                         }).whenComplete(() {
                           redisDatasource.releaseConnection(cmd);
                         });
                       },
-                      
                     ),
                     const Text("server state")
                   ],
