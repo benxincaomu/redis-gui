@@ -1,11 +1,8 @@
-#[macro_use]
-
-/// 缓存不同的redis服务器
 use std::{
-    collections::{HashMap},
+    collections::HashMap,
     sync::{
-        Mutex, Arc,
         atomic::{AtomicUsize, Ordering},
+        Mutex,
     },
 };
 
@@ -149,9 +146,10 @@ pub fn close_connection(key: &str) {
  * 执行redis命令，执行命令时调用
  */
 #[tauri::command]
-pub fn exe_command(key: String, command: String) -> String {
+pub fn exe_command(key: String, command: String) -> Vec<String> {
     let mut cache = CACHE.lock().unwrap();
     let client = cache.get_mut(&key);
+    let mut res: Vec<String> = Vec::new();
     match client {
         Some(cl) => {
             let mut connection = cl.get_connection().unwrap();
@@ -169,34 +167,69 @@ pub fn exe_command(key: String, command: String) -> String {
                     args.push(c);
                 }
             }
-            // let query0 = redis::cmd("incr").arg(vec!["cc","1"]).query::<i32>(&mut connection);
-            // let query :Result<i32, redis::RedisError>;
             let c = cmd.to_lowercase();
             match c.as_str() {
-                "incr" | "decr" | "incrby" | "decrby" | "hincrby" | "hdecrby" => {
+                "incr" | "decr" | "incrby" | "decrby" | "hincrby" | "hdecrby" | "hset"=> {
                     let query = redis::cmd(&c).arg(args).query::<i32>(&mut connection);
                     match query {
-                        Ok(data) => data.to_string(),
+                        Ok(data) => {
+                            res.push(data.to_string());
+                            res
+                        }
                         Err(e) => {
                             println!("{:?}", e);
-                            e.to_string()
+                            res.push(e.category().to_string());
+                            res
                         }
                     }
                 }
+                "hgetall" => {
+                    let query: Result<Vec<String>, redis::RedisError> =
+                        redis::cmd(cmd).arg(args).query(&mut connection);
 
+                    match query {
+                        Ok(data) => {
+                            let mut kv = String::new();
+                            let mut index = 0;
+                            while index < data.len() {
+                                kv += &data[index];
+                                if index % 2 == 0 {
+                                    kv += " : ";
+                                } else {
+                                    res.push(kv.clone());
+                                    kv = String::new();
+                                }
+                                index += 1;
+                            }
+                            res
+                        }
+                        Err(e) => {
+                            println!("{:?}", e);
+                            res.push(e.to_string());
+                            res
+                        }
+                    }
+                }
                 _ => {
                     let query: Result<Option<String>, redis::RedisError> =
                         redis::cmd(cmd).arg(args).query(&mut connection);
 
                     match query {
                         Ok(data) => match data {
-                            Some(data) => format!("\"{}\"", data),
-                            None => "nil".to_string(),
+                            Some(data) => {
+                                res.push(data.to_string());
+                                res
+                            }
+                            None => {
+                                res.push("Nil".to_string());
+                                res
+                            }
                         },
                         Err(e) => {
                             println!("{:?}", e);
 
-                            e.to_string()
+                            res.push(e.to_string());
+                            res
                         }
                     }
                 }
@@ -205,7 +238,8 @@ pub fn exe_command(key: String, command: String) -> String {
         None => {
             println!("{:?}", "redis连接不存在");
 
-            "".to_string()
-        }
+            // "".to_string()
+            res
+        } // res
     }
 }

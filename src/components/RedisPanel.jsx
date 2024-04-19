@@ -34,13 +34,18 @@ export default function RedisPanel({ connId }) {
             <div style={{ width: '90%', height: '10%', minHeight: '50px' }}>
                 <Input value={inputValue} autoFocus onChange={(e) => setInputValue(e.target.value)} style={{ width: '100%', height: '100%' }} onPressEnter={(e) => {
                     texts.pop();
-                    let br = React.createElement("div", '', e.target.value);
+                    let br = React.createElement("div", '', "redis -> "+e.target.value);
                     texts.push(br);
                     setTexts([...texts]);
                     setInputValue("");
                     invoke('exe_command', { key: connId, command: e.target.value }).then(res => {
-                        br = React.createElement("div", '', res);
-                        texts.push(br);
+                        console.log(res);
+                        if(Array.isArray(res)){
+                            res.forEach(r => {
+                                let br = React.createElement("div", '', r);
+                                texts.push(br);
+                            })
+                        }
                         texts.push(React.createElement("div", '', ""));
                         setTexts([...texts]);
                         showResRef.current.scrollTop = showResRef.current.scrollHeight+10;
