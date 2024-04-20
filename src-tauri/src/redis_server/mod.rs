@@ -169,17 +169,15 @@ pub fn exe_command(key: String, command: String) -> Vec<String> {
             }
             let c = cmd.to_lowercase();
             match c.as_str() {
-                "incr" | "decr" | "incrby" | "decrby" | "hincrby" | "hdecrby" | "hset"=> {
+                "incr" | "decr" | "incrby" | "decrby" | "hincrby" | "hdecrby" | "hset" => {
                     let query = redis::cmd(&c).arg(args).query::<i32>(&mut connection);
                     match query {
                         Ok(data) => {
                             res.push(data.to_string());
-                            res
                         }
                         Err(e) => {
                             println!("{:?}", e);
                             res.push(e.category().to_string());
-                            res
                         }
                     }
                 }
@@ -201,12 +199,26 @@ pub fn exe_command(key: String, command: String) -> Vec<String> {
                                 }
                                 index += 1;
                             }
-                            res
                         }
                         Err(e) => {
                             println!("{:?}", e);
                             res.push(e.to_string());
-                            res
+                        }
+                    }
+                }
+                "keys" => {
+                    let query: Result<Vec<String>, redis::RedisError> =
+                        redis::cmd(cmd).arg(args).query(&mut connection);
+
+                    match query {
+                        Ok(data) => {
+                            for d in data {
+                                res.push(d.to_string());
+                            }
+                        }
+                        Err(e) => {
+                            println!("{:?}", e);
+                            res.push(e.to_string());
                         }
                     }
                 }
@@ -218,18 +230,15 @@ pub fn exe_command(key: String, command: String) -> Vec<String> {
                         Ok(data) => match data {
                             Some(data) => {
                                 res.push(data.to_string());
-                                res
                             }
                             None => {
                                 res.push("Nil".to_string());
-                                res
                             }
                         },
                         Err(e) => {
                             println!("{:?}", e);
 
                             res.push(e.to_string());
-                            res
                         }
                     }
                 }
@@ -238,8 +247,8 @@ pub fn exe_command(key: String, command: String) -> Vec<String> {
         None => {
             println!("{:?}", "redis连接不存在");
 
-            // "".to_string()
-            res
-        } // res
+            // res
+        } 
     }
+    res
 }
