@@ -1,6 +1,13 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
-use app::{db, redis_server::*};
+#[macro_use]
+extern crate rbatis;
+
+pub mod db;
+
+pub mod redis_server;
+
+use redis_server::*;
 #[tokio::main]
 async fn main() {
     // 初始化sqlite
@@ -19,4 +26,3 @@ async fn main() {
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
-
